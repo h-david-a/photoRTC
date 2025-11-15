@@ -6,30 +6,48 @@
 <body>
   <video id="video" autoplay playsinline></video>
   <button id="capture">Take Photo</button>
+  <button id="switchCamera">Switch Camera</button>
   <canvas id="canvas" width="640" height="480"></canvas>
   <script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const captureButton = document.getElementById('capture');
-    const constraints = {
-      video: { facingMode: 'environment' }
-    };
+    const switchCameraButton = document.getElementById('switchCamera');
 
-    // Access camera
-    navigator.mediaDevices.getUserMedia(constraints)
-      .then((stream) => {
-        video.srcObject = stream;
-        // Wait for video metadata to load
-        video.addEventListener('loadedmetadata', () => {
-          // Optionally, set canvas size to match video aspect ratio
-          // canvas.width = video.videoWidth;
-          // canvas.height = video.videoHeight;
+    let facingMode = 'environment'; // 'environment' for back, 'user' for front
+
+    function startCamera() {
+      const constraints = {
+        video: { facingMode: facingMode }
+      };
+
+      // Stop any existing stream
+      if (video.srcObject) {
+        const tracks = video.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+      }
+
+      // Start new stream
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then((stream) => {
+          video.srcObject = stream;
+          video.addEventListener('loadedmetadata', () => {
+            // Optionally, set canvas size to match video aspect ratio
+            // canvas.width = video.videoWidth;
+            // canvas.height = video.videoHeight;
+          });
+        })
+        .catch(err => {
+          console.error('Error accessing camera:', err);
         });
-      })
-      .catch(err => {
-        console.error('Error accessing camera:', err);
-      });
+    }
+
+    // Switch camera on button click
+    switchCameraButton.addEventListener('click', () => {
+      facingMode = facingMode === 'environment' ? 'user' : 'environment';
+      startCamera();
+    });
 
     // Capture photo and draw to canvas with correct aspect ratio
     captureButton.addEventListener('click', () => {
@@ -55,6 +73,9 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight);
     });
+
+    // Start with back camera
+    startCamera();
   </script>
 </body>
 </html>
