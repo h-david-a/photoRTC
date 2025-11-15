@@ -12,10 +12,13 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const captureButton = document.getElementById('capture');
+    const constraints = {
+      video: { facingMode: 'environment' }
+    };
 
     // Access camera
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then((stream) => {
         video.srcObject = stream;
         // Wait for video metadata to load
         video.addEventListener('loadedmetadata', () => {
